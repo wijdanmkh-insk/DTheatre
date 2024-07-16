@@ -81,7 +81,7 @@ void halUtama(){
     system("cls");
     int pilih;
 
-    int luSalahMilihAjg = 0;
+    int invalid = 0;
     do{
         logo();
         puts("                                      pilihan : ");
@@ -103,10 +103,10 @@ void halUtama(){
         default :
             printf("                           Pilihan salah! Coba lagi!");
             getchar();
-            luSalahMilihAjg = 1;
+            invalid = 1;
             break;
         }
-    }while(luSalahMilihAjg == 1);
+    }while(invalid == 1);
 
 }
 
