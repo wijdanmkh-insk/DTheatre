@@ -17,8 +17,9 @@ Menambahkan beberapa fitur dasar yang membantu proses login admin<br/>
 [x] Menambah daftar film baru<br/>
 [] Melihat riwayat pembelian<br/>
 [] Melihat akun user<br/>
-[] Menghapus akun<br/>
+[x] Menghapus akun<br/>
 [] Melihat ulasan user<br/>
+[x] Menambahkan fungsi top up
 
 ### Fitur User
 [x] Mendaftarkan akun<br/>
