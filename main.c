@@ -15,7 +15,7 @@ struct account{
     char usn[120];
     char password[120];
     long int saldo;
-}dataUser;
+};
 
 struct riwayat{
     char nama[120];
@@ -43,6 +43,8 @@ struct data_film{
     struct tanggal tgl_tayang_akhir;
     struct waktu wkt_tayang;
     struct waktu durasi;
+    int tiket_reguler;
+    int tiket_premiere;
     float rating;
 };
 
@@ -66,6 +68,7 @@ void topUp();
 void loginUser(int maxLog);
 void menuUser(char *nama);
 void lihatFilm(char *user);
+void pesanTiket(char *user);
 
 int main(){
     halUtama();
@@ -120,17 +123,37 @@ void halUtama(){
 void daftarAkun(){
     system("cls");
     struct account dataBaru;
+    struct account trackData;
+    int dataSama;
+    dataSama = 0;
 
     FILE *dataUser;
-    dataUser = fopen("infoPengguna.dat", "ab");
+    dataUser = fopen("infoPengguna.dat", "ab+");
 
     logo();
     puts("================ INFORMASI PENDAFTARAN =================\n");
     printf("Masukkan nickname : "); gets(dataBaru.nama);
     printf("Masukkan Username : "); gets(dataBaru.usn);
     printf("Masukkan password : "); gets(dataBaru.password);
-    printf("Masukkan saldo    : "); scanf("%d", &dataBaru.saldo);
+    printf("Masukkan saldo    : "); scanf("%d", &dataBaru.saldo); getchar();
     
+    do{
+        fseek(dataUser, 0, SEEK_SET);
+        while(fread(&trackData, sizeof(trackData), 1, dataUser)!=0){
+            if(strcmp(trackData.usn, dataBaru.usn)==0){
+                dataSama = 1;
+                break;
+            }else{
+                dataSama = 0;
+            }
+        }
+
+        if(dataSama == 1){
+            printf("Username yang anda ambil sudah ada! Silahkan pilih username yang lain!\n");
+            printf("Username baru : "); gets(dataBaru.usn);
+        }
+    }while(dataSama==1);
+
     if(fwrite(&dataBaru, sizeof(dataBaru), 1, dataUser) == 1){
         printf("Data berhasil disimpan! Silahkan login dengan menekan tombol apa saja");
         getchar();
@@ -458,6 +481,7 @@ void loginUser(int maxLog){
     int valid;
 
     //PROSES DATA
+    valid = 0;
     cari_data = fopen("infoPengguna.dat", "rb");
 
     logo();
@@ -469,7 +493,11 @@ void loginUser(int maxLog){
         if(strcmp(input.usn, find.usn) == 0 && strcmp(input.password, find.password) == 0){
             valid = 1;
             break;
-        }else{
+        }
+    }
+
+    fclose(cari_data);
+    if(valid == 0){
             if(maxLog > 0){
                 system("cls");
                 valid = 0;
@@ -481,10 +509,7 @@ void loginUser(int maxLog){
             }else{
                 printf("Maaf, kesempatan login sudah habis!");
             }
-        }
     }
-
-    fclose(cari_data);
 
     if(valid == 1){
         menuUser(find.nama);
@@ -551,5 +576,9 @@ void lihatFilm(char *user){
     getchar();
     menuUser(user);
 }
+void pesanTiket(char *user){
+    system("cls");
+    logo();
 
+}
 //DEKLARASI FUNGSI SPESIFIK FUNGSIONAL
