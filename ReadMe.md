@@ -22,7 +22,8 @@ Menambahkan beberapa fitur dasar yang membantu proses login admin<br/>
 
 ### Fitur User
 [x] Mendaftarkan akun<br/>
-[] Login dengan akun yang sudah didaftarkan (pakai rekursi)<br/>
+[x] Login dengan akun yang sudah didaftarkan (pakai rekursi)<br/>
+[x] Mengecek apakah ada username yang sama<br/>
 [] Melihat film yang tersedia<br/>
 [] Memesan tiket<br/>
 [] Membeli popcorn atau minuman<br/>
