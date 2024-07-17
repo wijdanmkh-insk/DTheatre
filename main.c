@@ -117,7 +117,6 @@ void halUtama(){
             break;
         }
     }while(invalid == 1);
-
 }
 
 void daftarAkun(){
