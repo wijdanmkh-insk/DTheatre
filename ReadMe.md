@@ -15,8 +15,9 @@ Menambahkan beberapa fitur dasar yang membantu proses login admin<br/>
 ### Fitur Admin
 [x] Login dengan username dan password standar (pakai rekursi)<br/>
 [x] Menambah daftar film baru<br/>
-[] Melihat riwayat pembelian<br/>
-[] Melihat akun user<br/>
+[] Menyortir film lama dan film baru agar tampil terurut<br/>
+[] Melihat riwayat pemesanan<br/>
+[x] Melihat akun user<br/>
 [x] Menghapus akun<br/>
 [] Melihat ulasan user<br/>
 [x] Menambahkan fungsi top up
@@ -25,8 +26,8 @@ Menambahkan beberapa fitur dasar yang membantu proses login admin<br/>
 [x] Mendaftarkan akun<br/>
 [x] Login dengan akun yang sudah didaftarkan (pakai rekursi)<br/>
 [x] Mengecek apakah ada username yang sama<br/>
-[] Melihat film yang tersedia<br/>
-[] Memesan tiket<br/>
-[] Membeli popcorn atau minuman<br/>
+[x] Melihat film yang tersedia<br/>
+[x] Mencari film berdasarkan judul dan genre <br/>
+[] Memesan tiket, memesan kursi, dan membeli popcorn atau minuman<br/>
 [] Melihat riwayat pemesanan<br/>
 [] Mengganti password<br/>
