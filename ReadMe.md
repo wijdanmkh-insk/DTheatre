@@ -15,22 +15,27 @@ Dapat menyortir data film dan dapat melihat riwayat pembelian tiket film<br/>
 
 ## Fitur yang diberikan
 ### Fitur Admin
-[x] Login dengan username dan password standar (pakai rekursi)<br/>
-[x] Menambah daftar film baru<br/>
-[x] Menyortir film lama dan film baru agar tampil terurut<br/>
-[x] Melihat riwayat pemesanan<br/>
-[x] Melihat akun user<br/>
-[x] Menghapus akun<br/>
-[] Melihat ulasan user<br/>
-[x] Menambahkan fungsi top up
+[x][x] Login akun (pakai rekursi)       | loginAdmin()<br/>
+[x][x] Menambah daftar film baru        | tambahFilm()<br/>
+[x][x] Menyortir film                   | sortirFilm()<br/>
+[x][x] Melihat riwayat pemesanan        | riwayatPembelian()<br/>
+[x][x] Melihat akun user                | lihatAkun()<br/>
+[x][x] Menghapus akun                   | hapusAkun()<br/>
+[x][x] Melihat ulasan user                | ulasanFilm()<br/>
+[x][x] Menambahkan fungsi top up          | topUp()<br/>
 
 ### Fitur User
-[x] Mendaftarkan akun<br/>
-[x] Login dengan akun yang sudah didaftarkan (pakai rekursi)<br/>
-[x] Mengecek apakah ada username yang sama<br/>
-[x] Melihat film yang tersedia<br/>
-[x] Mencari film berdasarkan judul dan genre <br/>
-[] Menulis ulasan film dan memberinya rating<br/>
-[] Memesan tiket, memesan kursi, dan membeli popcorn atau minuman<br/>
-[] Melihat riwayat pemesanan<br/>
-[] Mengganti password<br/>
+[x][x] Mendaftarkan akun                | daftarAkun()<br/>
+[x][x] Login (pakai rekursi)            | loginUser()<br/>
+[x][x] Mengecek kesamaan username       | masukAkun()<br/>
+[x][x] Melihat film yang tersedia       | lihatFilm(), lihatFilmDetail()<br/>
+[x][x] Cari film dari judul dan genre  | cariFilm(), cariFilmJudul(), cariFilmGenre()<br/>
+[x][x] Membuat ulasan dan memberi rating | beriUlasan()<br/>
+[x][] Memesan tiket, kursi, makanan     | pesanTiket(), invoice()<br/>
+[x][x] Melihat riwayat pemesanan         | lihatRiwayat()<br/>
+[x][x] Mengganti password                | gantiPass<br/>
+
+**note**
+kotak pertama -> fitur sudah ada
+kotak kedua   -> fitur sudah berfungsi
+

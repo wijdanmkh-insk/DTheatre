@@ -6,6 +6,7 @@
 /*          NOTES TO TAKE
 => Type 0 = admin, Type 1 = user
 */
+
 //DEKLARASI VARIABEL GLOBAL
 int max = 3;
 char genre[5][20] = {"Komedi", "Romance", "Horror", "Anak-anak", "Sci-Fi"};
@@ -68,6 +69,7 @@ struct data_film{
     struct waktu durasi;
     struct tiket reguler;
     struct tiket premiere;
+    float penonton;
     float rating;
 };
 
@@ -77,6 +79,9 @@ struct kursi{
     int no_kursi_reguler[6][8];
     int no_kursi_premier[3][5];
 };
+
+//DEKLARASI STRUCT ADMIN GLOBAL
+struct account admin = {"admin", "1", "1", 0};
 
 //DEKLARASI FUNCTION UMUM
 void logo();
@@ -103,12 +108,14 @@ void pesanTiket(char *user, char *usn);
 void beriUlasan(char *user, char *usn);
 void cariFilm(char *user, char *usn);
 void cariFilmGenre(char *user, char *usn);
-void cariFilmJudul();
-void gantiPass(char *user);
+void cariFilmJudul(char *user, char *usn);
+void lihatRiwayat(char *user, char *usn);
+void gantiPass(char *user, char *usn);
 
 //DEKLARASI FUNGSI NON ROLE
 void sortirFilm();
 void invoice(struct riwayat *riwayat);
+void swap(struct data_film *a, struct data_film *b);
 
 int main(){
     halUtama();
@@ -120,10 +127,10 @@ int main(){
 void logo(){
     puts("========================================================================================");
     puts("              ____  _ _____ _                _");            
-    puts("             |  _ \\( )_   _| |__   ___  __ _| |_ _ __ ___"); 
-    puts("             | | | |/  | | | '_ \\ / _ \\/ _` | __| '__/ _ \\");
-    puts("             | |_| |   | | | | | |  __/ (_| | |_| | |  __/");
-    puts("             |____/    |_| |_| |_|\\___|\\__,_|\\__|_|  \\___|");
+    puts("             |  _ \\( )_   | |_   ___  __ | | _ __ ___"); 
+    puts("             | | | |/  | | | '_ \\ / _ \\/ ` | __| '_/ _ \\");
+    puts("             | || |   | | | | | |  __/ (| | |_| | |  __/");
+    puts("             |/    || || ||\\|\\,|\\||  \\_|");
     puts("========================================================================================");
 }
 
@@ -236,7 +243,7 @@ void loginAdmin(int maxLog){
     printf("Masukkan Username : "); gets(input.usn);
     printf("Masukkan password : "); gets(input.password);
 
-    if(strcmp(input.usn, "admin") == 0 && strcmp(input.password, "admin1230") == 0){
+    if(strcmp(input.usn, admin.usn) == 0 && strcmp(input.password, admin.password) == 0){
         menuAdmin();
     }else{
         if(maxLog > 0){
@@ -370,14 +377,15 @@ void tambahFilm(){
         printf("======================== FILM KE-%d ========================\n", a+1);    
         printf("Masukkan judul film           : "); gets(film_baru[a].nama);
         printf("Masukkan deskripsi film       : "); gets(film_baru[a].deskripsi);
-        printf("Silahkan masukkan genre film  : 1. Komedi 2. Romance 3. Horror 4. Anak-anak 5. Sci-Fi\nPilih : "); scanf("%d", &genreN); strcpy(film_baru->genre, genre[genreN]);
+        printf("Silahkan masukkan genre film  : 1. Komedi 2. Romance 3. Horror 4. Anak-anak 5. Sci-Fi\nPilih : "); scanf("%d", &genreN); strcpy(film_baru[a].genre, genre[genreN-1]);
         printf("Masukkan tanggal tayang       : "); scanf("%d %d %d", &film_baru[a].tgl_tayang.hari, &film_baru[a].tgl_tayang.bulan, &film_baru[a].tgl_tayang.tahun);
         printf("Masukkan tanggal tayang akhir : "); scanf("%d %d %d", &film_baru[a].tgl_tayang_akhir.hari, &film_baru[a].tgl_tayang_akhir.bulan, &film_baru[a].tgl_tayang_akhir.tahun);
         printf("Masukkan durasi film          : "); scanf("%d %d", &film_baru[a].durasi.jam, &film_baru[a].durasi.menit); getchar();
-        printf("Masukkan harga tiket reguler  : "); scanf("%ld", &film_baru->reguler.harga);
-        printf("Masukkan stok tiket reguler   : "); scanf("%ld", &film_baru->reguler.stok);
-        printf("Masukkan harga tiket premiere : "); scanf("%ld", &film_baru->premiere.harga); 
-        printf("Masukkan stok tiket premiere : "); scanf("%ld", &film_baru->premiere.stok); getchar();
+        printf("Masukkan harga tiket reguler  : "); scanf("%ld", &film_baru[a].reguler.harga);
+        printf("Masukkan stok tiket reguler   : "); scanf("%ld", &film_baru[a].reguler.stok);
+        printf("Masukkan harga tiket premiere : "); scanf("%ld", &film_baru[a].premiere.harga); 
+        printf("Masukkan stok tiket premiere : "); scanf("%ld", &film_baru[a].premiere.stok); getchar();
+        film_baru->penonton = 0;
         film_baru->rating = 0;
         printf("\n");
     }
@@ -415,29 +423,61 @@ void tambahFilm(){
 
 void riwayatPembelian(){
     logo();
+
+    FILE *riwayat_pembelian;
+    struct riwayat riwayat;
+
+    riwayat_pembelian = fopen("riwayat_pembelian.dat", "rb");
+
+    while(fread(&riwayat, sizeof(riwayat), 1, riwayat_pembelian)!=0){
+        puts("======================= BUKTI PEMBAYARAN ===========================");
+        puts("-------------------- DESKRIPSI SINGKAT TIKET ------------------------");
+        printf("Username        : %s\n", riwayat.usn);
+        printf("Nama Film       : %s\n", riwayat.namaFilm);
+        printf("Tgl Tonton      : %d-%d-%d\n", riwayat.tgl_tonton.hari, riwayat.tgl_tonton.bulan, riwayat.tgl_tonton.tahun);
+        printf("Wkt Tonton      : %dJm: %dMin\n\n", riwayat.wkt_tonton.jam, riwayat.wkt_tonton.menit);
+        printf("Lokasi bioskop  : %s\n", riwayat.pembelian_tiket.lokasi);
+
+        puts("---------------------- PEMBELIAN MAKANAN ---------------------------");
+        printf("Popcorn (%d) : %d\n",riwayat.popcorn.stok, 50000*riwayat.popcorn.stok);
+        printf("Minuman (%d) : %d\n",riwayat.minuman.stok, 25000*riwayat.minuman.stok);
+        printf("Total        : %ld\n", riwayat.total);
+
+    }
+    fclose(riwayat_pembelian);
+
+    puts("Tekan tombol apa saja untuk melanjutkan...");
+    getchar();
+    menuAdmin();
 }
 
-void ulasanFilm(){
+void ulasanFilm() {
     logo();
     
-    //FILE DAN VARIABEL
-    FILE *daftar_film;
+    FILE *daftar_ulasan;
+    int count = 1;
+    struct riwayat riwayat;
 
-    struct data_film data_film;
-
-    //BUKA DATA FILM
-    daftar_film = fopen("daftar_film.dat", "rb");
-    if(daftar_film == NULL){
-        printf("Belum ada ulasan film apapun. Yay!");
-    }else{
-        if(fread(&data_film, sizeof(data_film), 1, daftar_film) == 1){
-            puts("Ulasan Film dari : ");
-            printf("1. Judul Film                    :\n%s\n", data_film.nama);
-            printf("2. Deskripsi                     :\n%s\n", data_film.deskripsi);
-        }
+    daftar_ulasan = fopen("riwayat_pembelian.dat", "rb");
+    if (daftar_ulasan == NULL) {
+        printf("Belum ada ulasan film apapun. Yay!\n");
+        return;
     }
-    fclose(daftar_film);
+
+    while (fread(&riwayat, sizeof(struct riwayat), 1, daftar_ulasan) == 1) {
+        printf("===================== Data Ke-%d =======================\n", count);
+        printf("Ulasan film dari  : %s\n", riwayat.usn);
+        printf("Judul Film        : %s\n", riwayat.namaFilm);
+        printf("Rating            : %.f/10\n", riwayat.rating);
+        printf("Ulasan            : %s\n\n", riwayat.ulasan);
+        count++;
+    }
+    fclose(daftar_ulasan);
+    puts("Tekan tombol apa saja untuk kembali ke menu utama...");
+    getchar();
+    menuAdmin();
 }
+
 
 void lihatAkun(){
     logo();
@@ -452,7 +492,7 @@ void lihatAkun(){
     data_user = fopen("infoPengguna.dat", "rb");
 
     while(fread(&lihat, sizeof(lihat), 1, data_user)!=0){
-        printf("========== Data ke-%d\n ==============\n", count);
+        printf("============ Data ke-%d ==============\n", count);
         printf("Nama     : %s\n", lihat.nama);
         printf("Username : %s\n", lihat.usn);
         printf("Saldo    : %ld\n\n", lihat.saldo);
@@ -477,8 +517,8 @@ void hapusAkun(){
 
     FILE *data_user; 
     FILE *data_user_baru;
-    data_user = fopen("data_user.dat", "rb");
-    data_user_baru = fopen("data_user1.dat", "rb");
+    data_user = fopen("infoPengguna.dat", "rb");
+    data_user_baru = fopen("infoPengguna1.dat", "wb");
 
     while(fread(&hapus_akun, sizeof(hapus_akun), 1, data_user) == 1){
         if(strcmp(cari_akun, hapus_akun.usn) != 0){
@@ -488,9 +528,12 @@ void hapusAkun(){
 
     fclose(data_user);
     fclose(data_user_baru);
-    remove("data_user.dat");
-    rename("data_user1.dat", "data_user.dat");
+    remove("infoPengguna.dat");
+    rename("infoPengguna1.dat", "infoPengguna.dat");
 
+    puts("Proses hapus akun berhasil! Silahkan tekan nombol apa saja untuk kembali ke menu utama...");
+    getchar();
+    menuAdmin();
 }
 
 void topUp(){
@@ -506,7 +549,7 @@ void topUp(){
     printf("Silahkan masukkan username : "); gets(key_cari);
 
     FILE *data_user; 
-    data_user = fopen("infoPengguna.dat", "ab+");
+    data_user = fopen("infoPengguna.dat", "r+b");
     valid = 0;
 
         while(fread(&cari_akun, sizeof(cari_akun), 1, data_user) == 1){
@@ -522,6 +565,7 @@ void topUp(){
         printf("Masukkan saldo yang akan diisi ke akun : "); scanf("%d",&saldo_masuk);
         cari_akun.saldo+=saldo_masuk;
 
+        fseek(data_user, -sizeof(cari_akun), SEEK_CUR);
         if(fwrite(&cari_akun, sizeof(cari_akun), 1, data_user)!=0){
             puts("Pengisian saldo berhasil!\n");
         }
@@ -561,6 +605,7 @@ void loginUser(int maxLog){
             break;
         }
     }
+    fclose(cari_data);
 
     fclose(cari_data);
     if(valid == 0){
@@ -588,6 +633,7 @@ void menuUser(char *user, char *usn){
     //DEKLARASI VARIABEL 
     int pilih;
     int invalid;
+    int keluar;
 
     invalid = 0;
 
@@ -598,10 +644,13 @@ void menuUser(char *user, char *usn){
         puts("2. Pesan Tiket Nonton");
         puts("3. Cari Film");
         puts("4. Lihat Detail Film");
-        puts("4. Kasih Rating dan Ulasan");
-        puts("5. Lihat Riwayat Film Yang Pernah Ditonton");
-        puts("6. Ganti Password");
+        puts("5. Lihat Riwayat Film yang Pernah Ditonton");
+        puts("6. Kasih Rating dan Ulasan");
+        puts("7. Ganti Password\n");
 
+        puts("MENU KELUAR :");
+        puts("8. Keluar dari akun");
+        puts("9. Keluar dari aplikasi");
         printf("Silahkan pilih : "); scanf("%d", &pilih); getchar();
 
         switch(pilih){
@@ -616,8 +665,55 @@ void menuUser(char *user, char *usn){
                 break;
             case 4:
                 lihatFilmDetail(user, usn);
+                break;
+            case 5:
+                lihatRiwayat(user, usn);
+                break;
+            case 6:
+                beriUlasan(user, usn);
+                break;
+            case 7 :
+                gantiPass(user, usn);
+                break;
+            case 8:
+                invalid = 0;
+                do{
+                    logo();
+                    puts("Apakah anda yakin ingin keluar dari akun?\n1. YA\n2. TIDAK"); 
+                    scanf("%d", &keluar);
+
+                    if(keluar == 1){
+                        halUtama();
+                    }else if(keluar == 2){
+                        menuUser(user, usn);
+                    }else{
+                        invalid = 1;
+                        printf("Pilihan salah! Coba lagi!");
+                    }
+                }while(invalid == 1);
+                break;
+            case 9 :
+                invalid = 0;
+                do{
+                    logo();
+                    puts("Apakah anda yakin ingin keluar dari APLIKASI? 1. YA\n2. TIDAK"); 
+                    puts("===============================================================");
+                    puts("NOTE : JIKA ANDA MENEKAN 'TIDAK', MAKA MENU AKAN KEMBALI KE MENU\nPILIHAN USER");
+                    scanf("%d", &keluar);
+
+                    if(keluar == 1){
+                        exit(0);
+                    }else if(keluar == 2){
+                        menuUser(user, usn);
+                    }else{
+                        invalid = 1;
+                        printf("Pilihan salah! Coba lagi!");
+                    }
+                }while(invalid == 1);
+                break;
             default :
-                printf("Pilihan Salah! Coba lagi pilih");
+                printf("Pilihan Salah! Coba lagi pilih pilihan yang benar\n");
+                getchar();
         }
     }while(invalid == 1);
 }
@@ -735,6 +831,10 @@ void pesanTiket(char *user, char *usn){
     //SALIN DATA UNTUK DIPINDAHKAN KE INVOICE
     strcpy(riwayat_pembelian.namaFilm, cari_film.nama);
 
+
+    //INFORMASI PEMBELI
+    strcpy(riwayat_pembelian.usn, usn);
+
     //TANGGAL
     riwayat_pembelian.tgl_tonton.hari = cari_film.tgl_tayang.hari;
     riwayat_pembelian.tgl_tonton.bulan = cari_film.tgl_tayang.bulan;
@@ -812,31 +912,67 @@ void pesanTiket(char *user, char *usn){
     menuUser(user, usn);
 }
 
-void beriUlasan(char *user, char *usn){
-    //DEFINE VARIABLES
-    FILE *ulasan;
-    FILE *riwayat_pembelian;
-    FILE *daftar_film;
+void beriUlasan(char *user, char *usn) {
+    FILE *daftar_film, *riwayat_pembelian;
+    struct data_film film[100];
+    struct riwayat ulasan_baru;
+    int banyak_film = 0;
 
-    struct data_film semua_film[100];
-    struct riwayat ulasan_user;
-
-    ulasan = fopen("daftar_ulasan.dat", "ab");
-    riwayat_pembelian = fopen("riwayat_pembelian.dat", "rb");
     daftar_film = fopen("daftar_film.dat", "rb");
-
-    while(fread(&ulasan_user, sizeof(ulasan_user), 1, riwayat_pembelian) == 1){
-        if(strcmp(ulasan_user.usn, usn)==0){
-            if(ulasan_user.rating == 0){
-
-            }
-        }
+    if (daftar_film == NULL) {
+        printf("Error: Tidak dapat membuka file daftar_film.dat.\n");
+        return;
     }
 
-    system("cls");
+    while (fread(&film[banyak_film], sizeof(struct data_film), 1, daftar_film) == 1) {
+        banyak_film++;
+    }
+    fclose(daftar_film);
+
     logo();
-    puts("SISTEM BERI ULASAN");
-    printf("Halo, %s! Karena kamu sudah menonton film yang ada dibawah, tolong kasih ulasannya ya!\n", user);
+    printf("Daftar Film:\n");
+    for (int i = 0; i < banyak_film; i++) {
+        printf("%d. %s\n", i + 1, film[i].nama);
+    }
+    printf("Pilih nomor film yang ingin diulas: ");
+    int pilihan;
+    scanf("%d", &pilihan);
+    getchar();
+
+    if (pilihan < 1 || pilihan > banyak_film) {
+        printf("Pilihan tidak valid.\n");
+        return;
+    }
+
+    logo();
+    printf("Judul: %s\n", film[pilihan - 1].nama);
+    printf("Deskripsi: %s\n", film[pilihan - 1].deskripsi);
+
+    strcpy(ulasan_baru.usn, usn);
+    strcpy(ulasan_baru.namaFilm, film[pilihan - 1].nama);
+    printf("Masukkan rating (1-10): ");
+    scanf("%f", &ulasan_baru.rating);
+    getchar(); 
+    printf("Masukkan ulasan: ");
+    fgets(ulasan_baru.ulasan, sizeof(ulasan_baru.ulasan), stdin);
+
+    size_t len = strlen(ulasan_baru.ulasan);
+    if (len > 0 && ulasan_baru.ulasan[len - 1] == '\n') {
+        ulasan_baru.ulasan[len - 1] = '\0';
+    }
+
+    riwayat_pembelian = fopen("riwayat_pembelian.dat", "ab");
+    if (riwayat_pembelian == NULL) {
+        printf("Error: Tidak dapat membuka file riwayat_pembelian.dat.\n");
+        return;
+    }
+    fwrite(&ulasan_baru, sizeof(struct riwayat), 1, riwayat_pembelian);
+    fclose(riwayat_pembelian);
+
+    printf("Ulasan berhasil disimpan!\n");
+    puts("Tekan tombol apa saja untuk kembali ke menu utama...");
+    getchar();
+    menuUser(user, usn);
 }
 
 void cariFilm(char *user, char *usn){
@@ -899,8 +1035,8 @@ void cariFilmJudul(char *user, char *usn){
             printf("Deskripsi film       : %s\n", cari.deskripsi);
             printf("Genre film           : %s\n");
             printf("Tanggal tayang       : %d %d %d\n", cari.tgl_tayang.hari, cari.tgl_tayang.bulan, cari.tgl_tayang.tahun);
-            printf("Tanggal tayang akhir : %d %d %d\n"); scanf("%d %d %d", cari.tgl_tayang_akhir.hari, cari.tgl_tayang_akhir.bulan, cari.tgl_tayang_akhir.tahun);
-            printf("Durasi film          : %d %d %d\n", cari.durasi.jam, cari.durasi.menit); getchar();
+            printf("Tanggal tayang akhir : %d %d %d\n", cari.tgl_tayang_akhir.hari, cari.tgl_tayang_akhir.bulan, cari.tgl_tayang_akhir.tahun);
+            printf("Durasi film          : %d %d %d\n", cari.durasi.jam, cari.durasi.menit);
             printf("Harga tiket reguler  : %ld\n", cari.reguler.harga);
             printf("Stok tiket reguler   : %ld\n", cari.reguler.stok);
             printf("Harga tiket premiere : %ld\n", cari.premiere.harga); 
@@ -908,12 +1044,11 @@ void cariFilmJudul(char *user, char *usn){
             printf("Rating film          : %.lf\n", cari.rating);
             lagi = 0;
         }else{
-            puts("Judul film tidak ditemukan. Ingin mencari lagi? 1. YA\n2. TIDAK\nPilih : "); scanf("%d", &lagi); getchar();
-            if(lagi == 1){
-                lagi = 1;
-            }else if(lagi == 2){
+             puts("Judul film tidak ditemukan. Ingin mencari lagi? 1. YA\n2. TIDAK\nPilih : ");
+            if (scanf("%d", &lagi) != 1) {
                 lagi = 0;
             }
+            getchar();
         }
     }while(lagi == 1);
 
@@ -940,10 +1075,10 @@ void cariFilmGenre(char *user, char *usn){
     do{
         puts("======================== CARI FILM BERDASARKAN GENRE ==========================");
         puts("Genre tersedia : 1. Komedi 2. Romance 3. Horror 4. Anak-anak 5. Sci-Fi");
-        printf("Masukkan genre film "); scanf("%d", &cariGenre); getchar();
+        printf("Masukkan genre film : "); scanf("%d", &cariGenre); getchar();
 
         while(fread(&cari, sizeof(cari), 1, daftar_film) != 0){
-            if(strcmp(genre[cariGenre], cari.genre) == 0){
+            if(strcmp(genre[cariGenre-1], cari.genre) == 0){
                 found = 1;
                 break;
             }else{
@@ -953,25 +1088,108 @@ void cariFilmGenre(char *user, char *usn){
 
         system("cls");
         logo();
-        puts("===================== HASIL PENCARIAN BERDASARKAN JUDUL =====================");
+        puts("===================== HASIL PENCARIAN BERDASARKAN GENRE =====================");
         if(found == 1){
             printf("Judul film           : %s\n", cari.nama);
             printf("Deskripsi film       : %s\n", cari.deskripsi);
             printf("Genre film           : %s\n");
             printf("Tanggal tayang       : %d %d %d\n", cari.tgl_tayang.hari, cari.tgl_tayang.bulan, cari.tgl_tayang.tahun);
-            printf("Tanggal tayang akhir : %d %d %d\n"); scanf("%d %d %d", cari.tgl_tayang_akhir.hari, cari.tgl_tayang_akhir.bulan, cari.tgl_tayang_akhir.tahun);
-            printf("Durasi film          : %d %d %d\n", cari.durasi.jam, cari.durasi.menit); getchar();
-            printf("Harga tiket reguler  : %ld\n", cari.reguler.harga);
+            printf("Tanggal tayang akhir : %d %d %d\n", cari.tgl_tayang_akhir.hari, cari.tgl_tayang_akhir.bulan, cari.tgl_tayang_akhir.tahun);
+            printf("Durasi film          : %d %d %d\n", cari.durasi.jam, cari.durasi.menit);             printf("Harga tiket reguler  : %ld\n", cari.reguler.harga);
             printf("Stok tiket reguler   : %ld\n", cari.reguler.stok);
             printf("Harga tiket premiere : %ld\n", cari.premiere.harga); 
             printf("Stok tiket premiere  : %ld\n", cari.premiere.stok);
             printf("Rating film          : %.lf\n", cari.rating);
+            lagi = 0;
         }else{
-            puts("Judul film tidak ditemukan. Ingin mencari lagi? 1. YA\n2. TIDAK\nPilih : "); scanf("%d", &lagi); getchar();
+            puts("Judul film tidak ditemukan atau pilihan genre tidak ada. Ingin mencari lagi? 1. YA\n2. TIDAK\nPilih : ");
+            if (scanf("%d", &lagi) != 1) {
+                lagi = 0;
+            }
+            getchar();
         }
-    }while(!(lagi-1) == 1);
+    }while(lagi == 1);
+
+    fclose(daftar_film);
+    puts("Tekan tombol apa saja untuk kembali ke menu utama...");
+    getchar();
+    menuUser(user, usn);
+}
+
+void lihatRiwayat(char *user, char *usn){
+    system("cls");
+    //DEFINE VARIABLES AND FILES
+    FILE *riwayat_pembelian;
+    struct riwayat riwayat;
+
+    riwayat_pembelian = fopen("riwayat_pembelian.dat", "rb");
+
+    logo();
+    printf("Halo, %s! Berikut adalah riwayat pemesanan tiket yang sudah kami rangkum. Yuk kita lihat\n", user);
+
+    while(fread(&riwayat, sizeof(riwayat), 1, riwayat_pembelian)!=0){
+        if(strcmp(usn, riwayat.usn)==0){
+            puts("======================= BUKTI PEMBAYARAN ===========================");
+            puts("-------------------- DESKRIPSI SINGKAT TIKET ------------------------");
+            printf("Nama Film       : %s\n", riwayat.namaFilm);
+            printf("Tgl Tonton      : %d-%d-%d\n", riwayat.tgl_tonton.hari, riwayat.tgl_tonton.bulan, riwayat.tgl_tonton.tahun);
+            printf("Wkt Tonton      : %dJm: %dMin\n", riwayat.wkt_tonton.jam, riwayat.wkt_tonton.menit);
+            printf("Lokasi bioskop  : %s\n", riwayat.pembelian_tiket.lokasi);
+
+            puts("---------------------- PEMBELIAN MAKANAN ---------------------------");
+            printf("Popcorn (%d) : %d\n",riwayat.popcorn.stok, 50000*riwayat.popcorn.stok);
+            printf("Minuman (%d) : %d\n",riwayat.minuman.stok, 25000*riwayat.minuman.stok);
+            printf("Total        : %d\n", riwayat.total);
+        }
+    }
 
     puts("Tekan tombol apa saja untuk kembali ke menu utama...");
+    getchar();
+    menuUser(user, usn);
+}
+
+void gantiPass(char *user, char *usn){
+    system("cls");
+    logo();
+
+    //char passOld[250];
+    char passNew[250];
+    int found;
+
+    found = 0;
+
+    FILE *data_user_lama;
+    FILE *data_user_baru;
+    struct account cari;
+    struct account baru;
+
+    data_user_lama = fopen("infoPengguna.dat", "rb");
+    data_user_baru = fopen("infoPengguna1.dat", "wb");
+
+    printf("Halo, %s! Untuk mengganti password akun ini, silahkan masukkan :\n", user);
+    printf("Password baru : ");
+    fgets(passNew, sizeof(passNew), stdin);
+    passNew[strcspn(passNew, "\n")] = '\0'; 
+
+    while (fread(&cari, sizeof(cari), 1, data_user_lama) != 0) {
+        if (strcmp(usn, cari.usn) == 0) {
+            strcpy(cari.password, passNew); 
+            found = 1;
+        }
+        fwrite(&cari, sizeof(cari), 1, data_user_baru);
+    }
+
+    fclose(data_user_baru);
+    fclose(data_user_lama);
+
+    remove("infoPengguna.dat");
+    rename("infoPengguna1.dat", "infoPengguna.dat");
+
+    if (found) {
+        printf("Password berhasil diubah! Tekan tombol apa saja untuk kembali ke menu utama...");
+    } else {
+        printf("Pengguna tidak ditemukan. Tekan tombol apa saja untuk kembali ke menu utama...");
+    }
     getchar();
     menuUser(user, usn);
 }
@@ -985,6 +1203,7 @@ void invoice(struct riwayat *riwayat){
 
     puts("======================= BUKTI PEMBAYARAN ===========================");
     puts("-------------------- DESKRIPSI SINGKAT TIKET ------------------------");
+    printf("Username        : %s\n", riwayat->usn);
     printf("Nama Film       : %s\n", riwayat->namaFilm);
     printf("Tgl Tonton      : %d-%d-%d\n", riwayat->tgl_tonton.hari, riwayat->tgl_tonton.bulan, riwayat->tgl_tonton.tahun);
     printf("Wkt Tonton      : %dJm: %dMin\n\n", riwayat->wkt_tonton.jam, riwayat->wkt_tonton.menit);
@@ -994,7 +1213,7 @@ void invoice(struct riwayat *riwayat){
     printf("Popcorn (%d) : %d\n",riwayat->popcorn.stok, 50000*riwayat->popcorn.stok);
     printf("Minuman (%d) : %d\n",riwayat->minuman.stok, 25000*riwayat->minuman.stok);
     riwayat->total = 50000*riwayat->popcorn.stok+25000*riwayat->minuman.stok+riwayat->pembelian_tiket.harga;
-    printf("Total        : %ld\n", riwayat->total);
+    printf("Total       : %ld\n", riwayat->total);
 
     fwrite(riwayat, sizeof(struct riwayat), 1, simpan_riwayat);
     fclose(simpan_riwayat);
@@ -1018,10 +1237,8 @@ void sortirFilm(){
 
     for(int a=0;a<count;a++){
         for(int b=0;b<count;b++){
-            if(strcmp(data_film[a].nama, data_film[a+1].nama)<0){
-                temp = data_film[a];
-                data_film[a] = data_film[a+1];
-                data_film[a+1] = temp;
+            if(strcmp(data_film[b].nama, data_film[b+1].nama)<0){
+                swap(&data_film[b], &data_film[b+1]);
             }
         }
     }
@@ -1030,6 +1247,12 @@ void sortirFilm(){
         fwrite(&data_film[a], sizeof(struct data_film[a]), 1, daftar_film);
     }
 
+    free(data_film);
     fclose(daftar_film);
 }
 
+void swap(struct data_film *a, struct data_film *b){
+    struct data_film temp = *a;
+    *a = *b;
+    *b = temp;
+}
